@@ -9,9 +9,9 @@ available after the program exits.
 - Python 3.10 or later
 - No third-party packages are required
 
-## Run Interactively
+## Run the App
 
-Start the menu with:
+Run the program without command-line arguments to open the interactive menu:
 
 ```bash
 python main.py
@@ -25,29 +25,9 @@ Choose an option from the menu:
 3. View one ticket's details by entering its ID, such as `T001`.
 4. Quit.
 
-The menu continues until you choose **Quit**. To use a different data file,
-pass its path when starting the program:
-
-```bash
-python main.py --data data/campus-tickets.json
-```
-
-By default, data is saved to `tickets.json` in the current directory.
-
-## Command-Line Shortcuts
-
-Tickets can also be created or listed without opening the menu:
-
-```bash
-python main.py add --title "Campus Wi-Fi is down" --category Network --urgency high --affected-users 15
-python main.py list
-```
-
-Use `--data PATH` before the command to select a different JSON file:
-
-```bash
-python main.py --data data/campus-tickets.json list
-```
+The menu continues until you choose **Quit**. Ticket data is saved in
+`tickets.json` in the current working directory. All ticket actions are done
+through the menu; no command-line subcommands or data-file arguments are used.
 
 ## Ticket Rules
 

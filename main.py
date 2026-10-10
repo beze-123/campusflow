@@ -1,5 +1,3 @@
-import argparse
-
 from campusflow.storage import StorageError
 from campusflow.storage import TicketStorage
 from campusflow.ticket import (
@@ -8,22 +6,6 @@ from campusflow.ticket import (
 	normalize_urgency,
 	validate_affected_users,
 )
-
-
-def build_parser():
-	parser = argparse.ArgumentParser(description="Manage campus technical support tickets.")
-	parser.add_argument("--data", default="tickets.json", help="ticket data file")
-	commands = parser.add_subparsers(dest="command")
-
-	add = commands.add_parser("add", help="record a support request")
-	add.add_argument("--title", required=True)
-	add.add_argument("--category", required=True)
-	add.add_argument("--urgency", required=True)
-	add.add_argument("--affected-users", required=True, type=int)
-
-	commands.add_parser("list", help="list all support requests")
-
-	return parser
 
 
 def next_ticket_id(tickets):
@@ -157,26 +139,8 @@ def interactive_menu(storage):
 			return
 
 
-def main(argv=None):
-	parser = build_parser()
-	args = parser.parse_args(argv)
-	storage = TicketStorage(args.data)
-	try:
-		if args.command is None:
-			interactive_menu(storage)
-		elif args.command == "add":
-			ticket = add_ticket(
-				storage,
-				args.title,
-				args.category,
-				args.urgency,
-				args.affected_users,
-			)
-			print(f"Created {ticket['id']} ({ticket['priority']}).")
-		elif args.command == "list":
-			print(format_tickets(storage.load()))
-	except (StorageError, ValueError) as error:
-		parser.error(str(error))
+def main():
+	interactive_menu(TicketStorage())
 
 
 if __name__ == "__main__":
