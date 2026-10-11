@@ -125,3 +125,98 @@ I learned that persistent storage is more than simply reading and writing JSON.
 A reliable system must **validate data, enforce business rules, handle errors, prevent corrupted writes, and verify stored information**.
 
 AI supported my learning, while I remained responsible for understanding and verifying the final implementation.
+
+
+
+## ENGINEER B 
+
+# AI Learning Log — CampusFlow
+
+## Task: Workflow and Ticket Assignment Logic
+
+- **Project:** CampusFlow
+- **Language:** Python
+- **Feature:** Input validation, ticket assignment, and error handling
+
+---
+
+## What I Worked On
+
+I worked on the **workflow and ticket assignment module** (`campusflow/workflow.py`) for CampusFlow.
+
+The main responsibilities were:
+
+- Validating and cleaning staff assignment inputs.
+- Searching ticket collections for specific ticket IDs.
+- Updating ticket metadata in-place upon finding matches.
+- Ensuring robust exception handling for missing items and bad inputs.
+- Navigating git pull request, review, and merge workflows on GitHub.
+
+---
+
+## What I Learned
+
+### Input Guard Clauses & String Normalization
+
+I learned how to enforce strict data contracts on input parameters before processing workflow operations.
+
+- Used `isinstance(assigned_to, str)` to ensure the input is explicitly a string.
+- Used `.strip() == ""` to catch empty or whitespace-only staff names.
+- Leveraged `.strip()` to cleanly sanitize user strings before saving them to the ticket dict.
+
+For example, `"  Alice  "` safely becomes `"Alice"`, while whitespace-only inputs like `"   "` raise a `ValueError`.
+
+### Exception Scope & Loop Control
+
+I learned how the structural placement of `raise` statements affects loop execution.
+
+- Keeping `return ticket` inside the loop terminates execution as soon as a matching ID is found.
+- Moving `raise KeyError(...)` outside the `for` loop ensures every ticket in the collection is checked before declaring an ID missing.
+- Unindenting the exception handler prevents the function from crashing prematurely on the very first mismatched ticket.
+
+---
+
+## Error Handling & Logic Design
+
+### Explicit `raise` vs. Silent `return`
+
+I evaluated whether to return default values (like `None`) or raise exceptions when operations fail.
+
+- **`return None`**: Silent error codes can pass downstream silently, causing obscure `TypeError` crashes later in the execution flow.
+- **`raise Exception`**: Explicitly raising `ValueError` (for bad input) and `KeyError` (for missing tickets) halts execution immediately, enforcing clean interface contracts and allowing callers to use `try...except` cleanly.
+
+---
+
+## How AI Helped Me
+
+I used AI as a **collaborative partner and code-review assistant**.
+
+AI helped me understand:
+
+- The necessity of raising standard Python exceptions over returning `None`.
+- How indentation directly controls loop iteration and exception boundaries.
+- Resolving GitHub Pull Request workflows (understanding self-approval limitations vs. comment reviews).
+- Extracting exact Git commit SHAs using terminal commands (`git rev-parse HEAD`).
+
+I authored the implementation line-by-line and verified all logic choices before merging.
+
+---
+
+## How I Verified the Work
+
+I tested both valid and invalid scenarios for ticket assignments:
+
+- Valid staff names successfully assign to existing ticket IDs and return the updated dictionary.
+- Whitespace-padded names are trimmed and normalized correctly.
+- Empty strings or non-string inputs raise a `ValueError`.
+- Non-existent ticket IDs iterate through the full collection and raise a `KeyError`.
+
+---
+
+## Key Takeaway
+
+I learned that backend workflow logic requires **strict defensive coding and explicit failure states**.
+
+A reliable feature must **validate inputs early, avoid silent error returns, handle missing resources deterministically, and follow clean pull request workflows**.
+
+AI guided my understanding of python exception mechanics and pull request resolution, while I remained responsible for writing, testing, and merging the code.
