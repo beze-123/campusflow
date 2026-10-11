@@ -18,5 +18,15 @@
     "priority": "critical",
     "status": "open",
     "assigned_to": null
+  },
+  {
+    "id": "T003",
+    "title": "wifi",
+    "category": "Network",
+    "urgency": "medium",
+    "affected_users": 5,
+    "priority": "medium",
+    "status": "open",
+    "assigned_to": null
   }
 ]
