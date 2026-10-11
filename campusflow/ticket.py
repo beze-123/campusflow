@@ -50,26 +50,23 @@ def validate_affected_users(affected_users: int) -> int:
 def calculate_priority(urgency: str, affected_users: int) -> str:
 	urgency = normalize_urgency(urgency)
 	affected_users = validate_affected_users(affected_users)
-	high_impact = affected_users >= 10
+	if affected_users >= 10 and urgency == "high":
+		return "critical"
+	elif affected_users >= 10 or urgency == "high":
+		return "high"
+	elif affected_users >= 3 or urgency == "medium":
+		return "medium"
+	else:
+		return "low"
 
-	if urgency == "high":
-		return "critical" if high_impact else "high"
-	if urgency == "medium":
-		return "high" if high_impact else "medium"
-	return "medium" if high_impact else "low"
 
 
-def create_ticket(
-	ticket_id: str,
-	title: str,
-	category: str,
-	urgency: str,
-	affected_users: int,
-) -> dict:
+def create_ticket(ticket_id: str, title: str, category: str, urgency: str,affected_users: int,) -> dict:
 	if not isinstance(ticket_id, str) or not ticket_id.strip():
 		raise ValueError("Ticket ID must not be blank.")
 	if not isinstance(title, str) or not title.strip():
 		raise ValueError("Title must not be blank.")
+
 
 	urgency = normalize_urgency(urgency)
 	affected_users = validate_affected_users(affected_users)
@@ -108,8 +105,10 @@ def validate_ticket_data(ticket: dict) -> dict:
 	)
 	if ticket["priority"] != normalized["priority"]:
 		raise ValueError(f"Ticket {ticket['id']} has an invalid priority.")
+	
 	normalized["status"] = normalize_status(ticket["status"])
 	assigned_to = ticket["assigned_to"]
+
 	if assigned_to is not None and (
 		not isinstance(assigned_to, str) or not assigned_to.strip()
 	):

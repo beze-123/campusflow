@@ -20,10 +20,13 @@ class TicketStorage:
 		try:
 			with self.path.open(encoding="utf-8") as file:
 				data = json.load(file)
+
 			if not isinstance(data, list):
 				raise ValueError("The ticket file must contain a JSON list.")
+			
 			tickets = [validate_ticket_data(ticket) for ticket in data]
 			ids = [ticket["id"] for ticket in tickets]
+
 			if len(ids) != len(set(ids)):
 				raise ValueError("The ticket file contains duplicate IDs.")
 			return tickets
@@ -31,6 +34,7 @@ class TicketStorage:
 			raise StorageError(f"Could not read {self.path}: {error}") from error
 
 	def save(self, tickets: list[dict]) -> None:
+
 		self.path.parent.mkdir(parents=True, exist_ok=True)
 		temporary_path = None
 		try:
@@ -45,7 +49,9 @@ class TicketStorage:
 				temporary_path = Path(file.name)
 				json.dump(tickets, file, indent=2)
 				file.write("\n")
+
 			os.replace(temporary_path, self.path)
+			
 		except OSError as error:
 			raise StorageError(f"Could not write {self.path}: {error}") from error
 		finally:

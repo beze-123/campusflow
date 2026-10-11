@@ -18,15 +18,5 @@
     "priority": "critical",
     "status": "open",
     "assigned_to": null
-  },
-  {
-    "id": "T003",
-    "title": "A.C not working",
-    "category": "Other",
-    "urgency": "high",
-    "affected_users": 50,
-    "priority": "critical",
-    "status": "open",
-    "assigned_to": null
   }
 ]
