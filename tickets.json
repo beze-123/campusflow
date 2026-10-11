@@ -1,0 +1,32 @@
+[
+  {
+    "id": "T001",
+    "title": "wifi gone bad",
+    "category": "Network",
+    "urgency": "medium",
+    "affected_users": 10,
+    "priority": "high",
+    "status": "open",
+    "assigned_to": null
+  },
+  {
+    "id": "T002",
+    "title": "computer failure",
+    "category": "Hardware",
+    "urgency": "high",
+    "affected_users": 20,
+    "priority": "critical",
+    "status": "open",
+    "assigned_to": null
+  },
+  {
+    "id": "T003",
+    "title": "A.C not working",
+    "category": "Other",
+    "urgency": "high",
+    "affected_users": 50,
+    "priority": "critical",
+    "status": "open",
+    "assigned_to": null
+  }
+]
