@@ -1,10 +1,17 @@
 from campusflow.storage import StorageError
 from campusflow.storage import TicketStorage
+from campusflow.report import format_report
 from campusflow.ticket import (
 	create_ticket,
 	normalize_category,
 	normalize_urgency,
 	validate_affected_users,
+)
+from campusflow.workflow import (
+	assign_ticket,
+	get_work_queue,
+	reopen_ticket,
+	update_ticket_status,
 )
 
 
@@ -100,13 +107,44 @@ def format_ticket_details(ticket):
 	)
 
 
+def prompt_for_assignment(storage):
+	ticket_id = input("Ticket ID: ").strip()
+	assignee = input("Staff member: ")
+	tickets = storage.load()
+	ticket = assign_ticket(tickets, ticket_id, assignee)
+	storage.save(tickets)
+	print(f"Assigned {ticket['id']} to {ticket['assigned_to']}.")
+
+
+def prompt_for_status_update(storage):
+	ticket_id = input("Ticket ID: ").strip()
+	status = input("New status (in_progress or resolved): ").strip()
+	tickets = storage.load()
+	ticket = update_ticket_status(tickets, ticket_id, status)
+	storage.save(tickets)
+	print(f"Ticket {ticket['id']} is now {ticket['status']}.")
+
+
+def prompt_for_reopen(storage):
+	ticket_id = input("Ticket ID: ").strip()
+	tickets = storage.load()
+	ticket = reopen_ticket(tickets, ticket_id)
+	storage.save(tickets)
+	print(f"Ticket {ticket['id']} has been reopened.")
+
+
 def interactive_menu(storage):
 	while True:
 		print("\nCampusFlow Ticket Manager")
 		print("1. Create a ticket")
 		print("2. Show all tickets")
 		print("3. View ticket details")
-		print("4. Quit")
+		print("4. Assign a ticket")
+		print("5. Update ticket status")
+		print("6. Reopen a resolved ticket")
+		print("7. Show work queue")
+		print("8. Show ticket report")
+		print("9. Quit")
 		try:
 			choice = input("Choose an option: ").strip()
 			if choice == "1":
@@ -128,10 +166,20 @@ def interactive_menu(storage):
 				else:
 					print(format_ticket_details(ticket))
 			elif choice == "4":
+				prompt_for_assignment(storage)
+			elif choice == "5":
+				prompt_for_status_update(storage)
+			elif choice == "6":
+				prompt_for_reopen(storage)
+			elif choice == "7":
+				print(format_tickets(get_work_queue(storage.load())))
+			elif choice == "8":
+				print(format_report(storage.load()))
+			elif choice == "9":
 				print("Goodbye.")
 				return
 			else:
-				print("Choose 1, 2, 3, or 4.")
+				print("Choose a number from 1 to 9.")
 		except (StorageError, ValueError) as error:
 			print(f"Error: {error}")
 		except EOFError:
