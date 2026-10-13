@@ -28,5 +28,15 @@
     "priority": "medium",
     "status": "open",
     "assigned_to": null
+  },
+  {
+    "id": "T004",
+    "title": "wifi issue",
+    "category": "Network",
+    "urgency": "high",
+    "affected_users": 50,
+    "priority": "critical",
+    "status": "open",
+    "assigned_to": "blessing"
   }
 ]
