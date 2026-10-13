@@ -8,7 +8,7 @@ CATEGORIES = {
 	"other": "Other",
 }
 URGENCIES = {"low", "medium", "high"}
-STATUSES = {"open", "in_progress", "closed"}
+STATUSES = {"open", "in_progress", "resolved"}
 PRIORITIES = {"low", "medium", "high", "critical"}
 
 
@@ -32,10 +32,10 @@ def normalize_urgency(urgency: str) -> str:
 
 def normalize_status(status: str) -> str:
 	if not isinstance(status, str):
-		raise ValueError("Status must be open, in_progress, or closed.")
+		raise ValueError("Status must be open, in_progress, or resolved.")
 	normalized = status.strip().casefold().replace(" ", "_").replace("-", "_")
 	if normalized not in STATUSES:
-		raise ValueError("Status must be open, in_progress, or closed.")
+		raise ValueError("Status must be open, in_progress, or resolved.")
 	return normalized
 
 
@@ -50,14 +50,11 @@ def validate_affected_users(affected_users: int) -> int:
 def calculate_priority(urgency: str, affected_users: int) -> str:
 	urgency = normalize_urgency(urgency)
 	affected_users = validate_affected_users(affected_users)
-	if affected_users >= 10 and urgency == "high":
-		return "critical"
-	elif affected_users >= 10 or urgency == "high":
-		return "high"
-	elif affected_users >= 3 or urgency == "medium":
-		return "medium"
-	else:
-		return "low"
+	if urgency == "high":
+		return "critical" if affected_users >= 10 else "high"
+	if urgency == "medium":
+		return "high" if affected_users >= 10 else "medium"
+	return "medium" if affected_users >= 10 else "low"
 
 
 
