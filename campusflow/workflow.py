@@ -15,8 +15,8 @@ def assign_ticket(tickets: list[dict], ticket_id: str, assignee: str) -> dict:
 	ticket = _find_ticket(tickets, ticket_id)
 	if not isinstance(assignee, str) or not assignee.strip():
 		raise ValueError("Assignee name must not be blank.")
-	if ticket["status"] == "closed":
-		raise ValueError("Closed tickets must be reopened before they can be changed.")
+	if ticket["status"] in {"closed", "resolved"}:
+		raise ValueError("Resolved tickets must be reopened before they can be changed.")
 
 	ticket["assigned_to"] = assignee.strip()
 	return ticket
@@ -27,9 +27,11 @@ def update_ticket_status(tickets: list[dict], ticket_id: str, status: str) -> di
 	new_status = normalize_status(status)
 	current_status = ticket["status"]
 
+	if current_status in {"closed", "resolved"}:
+		raise ValueError("Use the reopen action to move a resolved ticket to open.")
 	if new_status == "open":
-		raise ValueError("Use the reopen action to move a closed ticket to open.")
-	next_status = {"open": "in_progress", "in_progress": "closed"}.get(
+		raise ValueError("Use the reopen action to move a resolved ticket to open.")
+	next_status = {"open": "in_progress", "in_progress": "resolved"}.get(
 		current_status
 	)
 	if new_status != next_status:
@@ -45,8 +47,8 @@ def update_ticket_status(tickets: list[dict], ticket_id: str, status: str) -> di
 
 def reopen_ticket(tickets: list[dict], ticket_id: str) -> dict:
 	ticket = _find_ticket(tickets, ticket_id)
-	if ticket["status"] != "closed":
-		raise ValueError("Only closed tickets can be reopened.")
+	if ticket["status"] not in {"closed", "resolved"}:
+		raise ValueError("Only resolved tickets can be reopened.")
 
 	ticket["status"] = "open"
 	return ticket
