@@ -1,5 +1,7 @@
-from campusflow.storage import StorageError
-from campusflow.storage import TicketStorage
+from campusflow.storage import (StorageError, TicketStorage)
+from campusflow.search import search_tickets
+
+
 from campusflow.report import format_report
 from campusflow.ticket import (
 	create_ticket,
@@ -144,7 +146,8 @@ def interactive_menu(storage):
 		print("6. Reopen a resolved ticket")
 		print("7. Show work queue")
 		print("8. Show ticket report")
-		print("9. Quit")
+		print("9. search tickets")
+		print("10. Quit")
 		try:
 			choice = input("Choose an option: ").strip()
 			if choice == "1":
@@ -176,6 +179,8 @@ def interactive_menu(storage):
 			elif choice == "8":
 				print(format_report(storage.load()))
 			elif choice == "9":
+				print(search_tickets(storage))
+			elif choice == "10":
 				print("Goodbye.")
 				return
 			else:
@@ -188,6 +193,7 @@ def interactive_menu(storage):
 
 
 def main():
+
 	interactive_menu(TicketStorage())
 
 
