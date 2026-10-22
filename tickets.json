@@ -48,5 +48,25 @@
     "priority": "high",
     "status": "open",
     "assigned_to": null
+  },
+  {
+    "id": "T006",
+    "title": "wIFI",
+    "category": "Network",
+    "urgency": "low",
+    "affected_users": 3,
+    "priority": "low",
+    "status": "open",
+    "assigned_to": null
+  },
+  {
+    "id": "T007",
+    "title": "WIFI",
+    "category": "Network",
+    "urgency": "low",
+    "affected_users": 5,
+    "priority": "low",
+    "status": "open",
+    "assigned_to": null
   }
 ]
