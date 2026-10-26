@@ -64,9 +64,11 @@ class WorkflowTests(unittest.TestCase):
 
 	def test_resolved_ticket_requires_explicit_reopen(self):
 		ticket = make_ticket("T001", status="resolved", assigned_to="Alex")
+		original_ticket = ticket.copy()
 
 		with self.assertRaisesRegex(ValueError, "reopen"):
 			assign_ticket([ticket], "T001", "Sam")
+		self.assertEqual(ticket, original_ticket)
 		with self.assertRaisesRegex(ValueError, "reopen action"):
 			update_ticket_status([ticket], "T001", "open")
 
@@ -83,7 +85,7 @@ class WorkflowTests(unittest.TestCase):
 
 		self.assertEqual(ticket["status"], "open")
 
-	def test_work_queue_orders_priority_then_numeric_id_and_excludes_resolved(self):
+	def test_work_queue_orders_priority_then_numeric_id_and_includes_only_open(self):
 		tickets = [
 			make_ticket("T010", priority="high", status="open"),
 			make_ticket("T003", priority="critical", status="in_progress"),
@@ -95,7 +97,7 @@ class WorkflowTests(unittest.TestCase):
 		queue = get_work_queue(tickets)
 
 		self.assertEqual([ticket["id"] for ticket in queue], [
-			"T002", "T003", "T010", "T004"
+			"T002", "T010", "T004"
 		])
 
 

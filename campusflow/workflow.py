@@ -57,7 +57,7 @@ def reopen_ticket(tickets: list[dict], ticket_id: str) -> dict:
 def get_work_queue(tickets: list[dict]) -> list[dict]:
 	priority_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
 	open_tickets = [
-		ticket for ticket in tickets if ticket["status"] in {"open", "in_progress"}
+		ticket for ticket in tickets if ticket["status"] == "open"
 	]
 
 	def sort_key(ticket: dict) -> tuple[int, int]:

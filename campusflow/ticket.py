@@ -1,72 +1,57 @@
 from __future__ import annotations
 
+from campusflow.validation import (
+	VALID_CATEGORIES,
+	VALID_PRIORITIES,
+	VALID_STATUSES,
+	VALID_URGENCIES,
+	validate_affected_users as _validate_affected_users,
+	validate_assignee,
+	validate_category,
+	validate_status,
+	validate_ticket_id,
+	validate_title,
+	validate_urgency,
+)
 
-CATEGORIES = {
-	"network": "Network",
-	"hardware": "Hardware",
-	"software": "Software",
-	"other": "Other",
-}
-URGENCIES = {"low", "medium", "high"}
-STATUSES = {"open", "in_progress", "resolved"}
-PRIORITIES = {"low", "medium", "high", "critical"}
+CATEGORIES = VALID_CATEGORIES
+URGENCIES = VALID_URGENCIES
+STATUSES = VALID_STATUSES
+PRIORITIES = VALID_PRIORITIES
 
 
 def normalize_category(category: str) -> str:
-	if not isinstance(category, str):
-		raise ValueError("Category must be Network, Hardware, Software, or Other.")
-	normalized = CATEGORIES.get(category.strip().casefold())
-	if normalized is None:
-		raise ValueError("Category must be Network, Hardware, Software, or Other.")
-	return normalized
+	return validate_category(category)
 
 
 def normalize_urgency(urgency: str) -> str:
-	if not isinstance(urgency, str):
-		raise ValueError("Urgency must be low, medium, or high.")
-	normalized = urgency.strip().casefold()
-	if normalized not in URGENCIES:
-		raise ValueError("Urgency must be low, medium, or high.")
-	return normalized
+	return validate_urgency(urgency)
 
 
 def normalize_status(status: str) -> str:
-	if not isinstance(status, str):
-		raise ValueError("Status must be open, in_progress, or resolved.")
-	normalized = status.strip().casefold().replace(" ", "_").replace("-", "_")
-	if normalized == "closed":
-		normalized = "resolved"
-	if normalized not in STATUSES:
-		raise ValueError("Status must be open, in_progress, or resolved.")
-	return normalized
+	return validate_status(status)
 
 
 def validate_affected_users(affected_users: int) -> int:
-	if isinstance(affected_users, bool) or not isinstance(affected_users, int):
-		raise ValueError("Affected users must be a positive integer.")
-	if affected_users <= 0:
-		raise ValueError("Affected users must be a positive integer.")
-	return affected_users
+	return _validate_affected_users(affected_users)
 
 
 def calculate_priority(urgency: str, affected_users: int) -> str:
 	urgency = normalize_urgency(urgency)
 	affected_users = validate_affected_users(affected_users)
-	if urgency == "high":
-		return "critical" if affected_users >= 10 else "high"
-	if urgency == "medium":
-		return "high" if affected_users >= 10 else "medium"
-	return "medium" if affected_users >= 10 else "low"
+	if urgency == "high" and affected_users >= 10:
+		return "critical"
+	if urgency == "high" or affected_users >= 10:
+		return "high"
+	if urgency == "medium" or affected_users >= 3:
+		return "medium"
+	return "low"
 
 
 
 def create_ticket(ticket_id: str, title: str, category: str, urgency: str,affected_users: int,) -> dict:
-	if not isinstance(ticket_id, str) or not ticket_id.strip():
-		raise ValueError("Ticket ID must not be blank.")
-	if not isinstance(title, str) or not title.strip():
-		raise ValueError("Title must not be blank.")
-
-
+	ticket_id = validate_ticket_id(ticket_id)
+	title = validate_title(title)
 	urgency = normalize_urgency(urgency)
 	affected_users = validate_affected_users(affected_users)
 	return {
@@ -78,11 +63,12 @@ def create_ticket(ticket_id: str, title: str, category: str, urgency: str,affect
 		"priority": calculate_priority(urgency, affected_users),
 		"status": "open",
 		"assigned_to": None,
+		"notes": [],
 	}
 
 
 def validate_ticket_data(ticket: dict) -> dict:
-	required_fields = {
+	base_fields = {
 		"id",
 		"title",
 		"category",
@@ -92,7 +78,10 @@ def validate_ticket_data(ticket: dict) -> dict:
 		"status",
 		"assigned_to",
 	}
-	if not isinstance(ticket, dict) or set(ticket) != required_fields:
+	if not isinstance(ticket, dict) or frozenset(ticket) not in {
+		frozenset(base_fields),
+		frozenset(base_fields | {"notes"}),
+	}:
 		raise ValueError("Stored ticket has missing or unexpected fields.")
 
 	normalized = create_ticket(
@@ -102,15 +91,24 @@ def validate_ticket_data(ticket: dict) -> dict:
 		ticket["urgency"],
 		ticket["affected_users"],
 	)
-	if ticket["priority"] != normalized["priority"]:
+	if not isinstance(ticket["priority"], str) or ticket["priority"] != normalized["priority"]:
 		raise ValueError(f"Ticket {ticket['id']} has an invalid priority.")
-	
 	normalized["status"] = normalize_status(ticket["status"])
 	assigned_to = ticket["assigned_to"]
 
-	if assigned_to is not None and (
-		not isinstance(assigned_to, str) or not assigned_to.strip()
-	):
-		raise ValueError(f"Ticket {ticket['id']} has an invalid assignee.")
-	normalized["assigned_to"] = assigned_to.strip() if assigned_to else None
+	if assigned_to is None:
+		normalized["assigned_to"] = None
+	else:
+		normalized["assigned_to"] = validate_assignee(assigned_to)
+
+	from campusflow.notes import validate_note_data
+
+	notes = ticket.get("notes", [])
+	if not isinstance(notes, list):
+		raise ValueError(f"Ticket {ticket['id']} has invalid notes.")
+	validated_notes = [validate_note_data(note) for note in notes]
+	note_ids = [note["note_id"] for note in validated_notes]
+	if len(note_ids) != len(set(note_ids)):
+		raise ValueError(f"Ticket {ticket['id']} has duplicate note IDs.")
+	normalized["notes"] = validated_notes
 	return normalized

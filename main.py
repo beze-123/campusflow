@@ -1,11 +1,16 @@
 from campusflow.storage import (StorageError, TicketStorage)
-from campusflow.search import search_tickets
+from campusflow.search import search_tickets, sort_search_results
+from campusflow.notes import add_note, get_ticket_notes
+from campusflow.understanding_check import run_understanding_check
 
 
 from campusflow.report import format_report
 from campusflow.ticket import (
+	CATEGORIES,
+	PRIORITIES,
 	create_ticket,
 	normalize_category,
+	normalize_status,
 	normalize_urgency,
 	validate_affected_users,
 )
@@ -109,6 +114,100 @@ def format_ticket_details(ticket):
 	)
 
 
+def format_search_results(tickets):
+	if not tickets:
+		return "No matching tickets."
+
+	headings = ("ID", "TITLE", "CATEGORY", "PRIORITY", "STATUS", "ASSIGNED TO")
+	rows = [
+		(
+			ticket["id"],
+			ticket["title"],
+			ticket["category"],
+			ticket["priority"],
+			ticket["status"],
+			ticket["assigned_to"] or "-",
+		)
+		for ticket in tickets
+	]
+	widths = [
+		max(len(heading), *(len(row[index]) for row in rows))
+		for index, heading in enumerate(headings)
+	]
+	lines = ["  ".join(heading.ljust(widths[index]) for index, heading in enumerate(headings))]
+	lines.extend(
+		"  ".join(value.ljust(widths[index]) for index, value in enumerate(row))
+		for row in rows
+	)
+	return "\n".join(lines)
+
+
+def prompt_for_search(storage, sort_by_priority=False):
+	title = input("Title contains (blank for any): ")
+	category = None
+	while True:
+		value = input("Category (Network, Hardware, Software, Other; blank for any): ")
+		if not value.strip():
+			break
+		try:
+			category = normalize_category(value)
+			break
+		except ValueError as error:
+			print(error)
+
+	status = None
+	while True:
+		value = input("Status (open, in_progress, resolved; blank for any): ")
+		if not value.strip():
+			break
+		try:
+			status = normalize_status(value)
+			break
+		except ValueError as error:
+			print(error)
+
+	priority = None
+	while True:
+		value = input("Priority (critical, high, medium, low; blank for any): ")
+		if not value.strip():
+			break
+		priority = value.strip().casefold()
+		if priority in PRIORITIES:
+			break
+		print("Priority must be critical, high, medium, or low.")
+
+	results = search_tickets(
+		storage.load(),
+		title=title,
+		category=category,
+		status=status,
+		priority=priority,
+	)
+	if sort_by_priority:
+		results = sort_search_results(results)
+	print(format_search_results(results))
+
+
+def prompt_for_add_note(storage):
+	ticket_id = input("Ticket ID: ").strip()
+	author = input("Author: ")
+	message = input("Note (5-300 characters): ")
+	tickets = storage.load()
+	note = add_note(tickets, ticket_id, author, message)
+	storage.save(tickets)
+	print(f"Added note {note['note_id']} to {ticket_id}.")
+
+
+def prompt_for_view_notes(storage):
+	ticket_id = input("Ticket ID: ").strip()
+	notes = get_ticket_notes(storage.load(), ticket_id)
+	if not notes:
+		print(f"No notes for ticket {ticket_id}.")
+		return
+	for note in notes:
+		print(f"{note['note_id']} | {note['author']} | {note['message']}")
+
+
 def prompt_for_assignment(storage):
 	ticket_id = input("Ticket ID: ").strip()
 	assignee = input("Staff member: ")
@@ -146,8 +245,12 @@ def interactive_menu(storage):
 		print("6. Reopen a resolved ticket")
 		print("7. Show work queue")
 		print("8. Show ticket report")
-		print("9. search tickets")
-		print("10. Quit")
+		print("9. Search tickets")
+		print("10. Search results by priority")
+		print("11. Add follow-up note")
+		print("12. View ticket notes")
+		print("13. Engineering Understanding Check")
+		print("14. Quit")
 		try:
 			choice = input("Choose an option: ").strip()
 			if choice == "1":
@@ -179,12 +282,20 @@ def interactive_menu(storage):
 			elif choice == "8":
 				print(format_report(storage.load()))
 			elif choice == "9":
-				print(search_tickets(storage))
+				prompt_for_search(storage)
 			elif choice == "10":
+				prompt_for_search(storage, sort_by_priority=True)
+			elif choice == "11":
+				prompt_for_add_note(storage)
+			elif choice == "12":
+				prompt_for_view_notes(storage)
+			elif choice == "13":
+				run_understanding_check()
+			elif choice == "14":
 				print("Goodbye.")
 				return
 			else:
-				print("Choose a number from 1 to 9.")
+				print("Choose a number from 1 to 14.")
 		except (StorageError, ValueError) as error:
 			print(f"Error: {error}")
 		except EOFError:
