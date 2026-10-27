@@ -7,7 +7,8 @@
     "affected_users": 10,
     "priority": "high",
     "status": "open",
-    "assigned_to": null
+    "assigned_to": null,
+    "notes": []
   },
   {
     "id": "T002",
@@ -17,7 +18,8 @@
     "affected_users": 20,
     "priority": "critical",
     "status": "open",
-    "assigned_to": null
+    "assigned_to": null,
+    "notes": []
   },
   {
     "id": "T003",
@@ -27,7 +29,8 @@
     "affected_users": 5,
     "priority": "medium",
     "status": "open",
-    "assigned_to": null
+    "assigned_to": null,
+    "notes": []
   },
   {
     "id": "T004",
@@ -37,7 +40,8 @@
     "affected_users": 50,
     "priority": "critical",
     "status": "open",
-    "assigned_to": "blessing"
+    "assigned_to": "blessing",
+    "notes": []
   },
   {
     "id": "T005",
@@ -47,7 +51,8 @@
     "affected_users": 30,
     "priority": "high",
     "status": "open",
-    "assigned_to": null
+    "assigned_to": null,
+    "notes": []
   },
   {
     "id": "T006",
@@ -55,9 +60,10 @@
     "category": "Network",
     "urgency": "low",
     "affected_users": 3,
-    "priority": "low",
+    "priority": "medium",
     "status": "open",
-    "assigned_to": null
+    "assigned_to": null,
+    "notes": []
   },
   {
     "id": "T007",
@@ -65,8 +71,20 @@
     "category": "Network",
     "urgency": "low",
     "affected_users": 5,
-    "priority": "low",
+    "priority": "medium",
     "status": "open",
-    "assigned_to": null
+    "assigned_to": null,
+    "notes": []
+  },
+  {
+    "id": "T008",
+    "title": "wifi",
+    "category": "Network",
+    "urgency": "high",
+    "affected_users": 300,
+    "priority": "critical",
+    "status": "open",
+    "assigned_to": null,
+    "notes": []
   }
 ]
